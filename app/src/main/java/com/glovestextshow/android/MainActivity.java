@@ -46,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
                 send();
             }
         });
+
+        findViewById(R.id.button_textclear).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                clear();
+            }
+        });
     }
 
     private void connect() {
@@ -81,5 +88,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void send() {
         SpeechUtils.speekText(text.getText().toString());
+    }
+
+    private void clear(){
+        text.setText("");
     }
 }
