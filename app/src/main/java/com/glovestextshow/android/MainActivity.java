@@ -2,6 +2,7 @@ package com.glovestextshow.android;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -10,16 +11,18 @@ import android.widget.Toast;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class MainActivity extends AppCompatActivity {
     private EditText ip;
     private TextView text;
-    public String SpeechText;
-
-    Socket socket = null;
+    private BufferedReader reader = null;
+    public Socket socket = null;
+    public String line = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,31 +63,20 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     while (true){
-                        Socket socket = serverSocket.accept();
+                        socket = serverSocket.accept();
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 Toast.makeText(MainActivity.this,"有客户端连接到了本机",Toast.LENGTH_SHORT).show();
                             }
                         });
-                        new ServerTask(socket,text).execute();
+                        new ServerThread(socket,text,MainActivity.this).start();
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }).start();
-    }
-
-    private void disconnect(){
-        if (socket!= null){
-            try {
-                socket.close();
-                Toast.makeText(MyApplication.getContext(),"端口关闭",Toast.LENGTH_SHORT).show();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     private void send() {
