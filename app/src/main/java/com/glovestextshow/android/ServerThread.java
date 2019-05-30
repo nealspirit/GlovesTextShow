@@ -27,7 +27,6 @@ public class ServerThread extends Thread {
     public void run() {
         try {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream(),"GB2312"));
-            Log.d("哈希码", String.valueOf(socket.hashCode()));
             while ((line = reader.readLine()) != null){
                 activity.runOnUiThread(new Runnable() {
                     @Override
@@ -39,6 +38,7 @@ public class ServerThread extends Thread {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            Log.d("提示信息", "serverThread线程错误");
         }
     }
 }

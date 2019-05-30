@@ -39,7 +39,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/button_send"
+            android:id="@+id/button_play"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -53,5 +53,11 @@
             android:text="清空"/>
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/button_speak"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="说话"/>
 
 </LinearLayout>
