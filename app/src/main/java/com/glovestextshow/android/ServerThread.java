@@ -5,6 +5,8 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.iflytek.cloud.SpeechUtility;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,8 +33,9 @@ public class ServerThread extends Thread {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        text.append(line);
-                        SpeechUtils.speekText(text.getText().toString());
+                        text.append(line + "\n");
+                        SpeechUtils.speekText(line);
+                        SpeechUtils.SpeechText = line;
                     }
                 });
             }

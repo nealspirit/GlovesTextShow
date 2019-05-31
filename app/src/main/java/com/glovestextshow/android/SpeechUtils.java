@@ -9,6 +9,8 @@ import com.iflytek.cloud.SpeechSynthesizer;
 import com.iflytek.cloud.SynthesizerListener;
 
 public class SpeechUtils {
+    public static String SpeechText;
+
     public static void speekText(String textSpeech) {
         SpeechSynthesizer mTts = SpeechSynthesizer.createSynthesizer(MyApplication.getContext(),null);
         mTts.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant. TYPE_CLOUD); //设置云端
