@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ServerSocket serverSocket = null;
     private Button button_connect;
     private RecognizerDialog iatDialog;
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
 
     Thread connectThread = null;
     Thread serverThread = null;
@@ -174,6 +177,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     for(DictationResult result : resultList){
                         words += result.toString();
                     }
+                    Date date = new Date(System.currentTimeMillis());
+                    text.append(simpleDateFormat.format(date) + " 输入：" + "\n");
                     text.append(words + "\n");
                     SpeechUtils.SpeechText = words;
                 }
