@@ -1,7 +1,9 @@
 package com.glovestextshow.android;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -44,6 +46,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String line = null;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
 
+    private SharedPreferences pref;
+    private SharedPreferences.Editor editor;
+
     private static final String TAG = "MainActivity";
 
     @Override
@@ -61,6 +66,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button_play).setOnClickListener(this);
         findViewById(R.id.button_textclear).setOnClickListener(this);
         findViewById(R.id.button_speak).setOnClickListener(this);
+
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String ipAddress = pref.getString("ip","");
+        if (!ipAddress.equals("")){
+            ip.setText(ipAddress);
+        }
     }
 
     @Override
@@ -91,6 +102,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final String ipText = ip.getText().toString();
 
         if (ipText != null && !ipText.equals("")){
+            editor = pref.edit();
+            editor.putString("ip",ipText);
+            editor.apply();
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
