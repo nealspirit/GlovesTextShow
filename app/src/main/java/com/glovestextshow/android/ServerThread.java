@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.iflytek.cloud.SpeechUtility;
 
@@ -22,8 +23,10 @@ public class ServerThread extends Thread {
     private String line = null;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
 
-    public ServerThread(Socket s, TextView text, Activity activity){
-        this.socket = s;
+    String ip;
+
+    public ServerThread(String ip, TextView text, Activity activity){
+        this.ip = ip;
         this.text = text;
         this.activity = activity;
     }
@@ -31,6 +34,14 @@ public class ServerThread extends Thread {
     @Override
     public void run() {
         try {
+            socket = new Socket(ip,12345);
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    text.append("@连接成功\n");
+                }
+            });
+
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream(),"GB2312"));
             while ((line = reader.readLine()) != null){
                 activity.runOnUiThread(new Runnable() {
@@ -46,7 +57,7 @@ public class ServerThread extends Thread {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Log.d("提示信息", "serverThread线程错误");
+            text.append("@连接错误\n");
         }
     }
 }

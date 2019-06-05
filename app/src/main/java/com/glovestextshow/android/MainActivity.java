@@ -28,7 +28,6 @@ import com.iflytek.cloud.ui.RecognizerDialogListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -39,13 +38,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView text;
     public Socket socket = null;
     private boolean isConnected = false;
-    private ServerSocket serverSocket = null;
     private Button button_connect;
     private RecognizerDialog iatDialog;
+    private BufferedReader reader = null;
+    private String line = null;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
-
-    Thread connectThread = null;
-    Thread serverThread = null;
 
     private static final String TAG = "MainActivity";
 
@@ -70,37 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.button_ip:
-                if (isConnected){
-                    if (connectThread != null && serverThread != null) {
-                        serverThread.interrupt();
-                        connectThread.interrupt();
-                        try {
-                            socket.close();
-                            Log.d("提示信息", "Socket关闭");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Log.d("提示信息", "Socket关闭出错");
-                        }
-                        try {
-                            serverSocket.close();
-                            Log.d("提示信息", "ServerSocket关闭");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Log.d("提示信息", "ServerSocket关闭出错");
-                        } finally {
-                            serverSocket = null;
-                            isConnected = false;
-                            button_connect.setText("连接");
-                        }
-                    }else {
-                        isConnected = false;
-                        button_connect.setText("连接");
-                    }
-                }else {
-                    connect();
-                    isConnected = true;
-                    button_connect.setText("断开");
-                }
+                connect();
                 break;
             case R.id.button_play:
                 SpeechUtils.speekText(SpeechUtils.SpeechText);
@@ -121,37 +88,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void connect() {
-        ip.setText(NetWorkUtils.getLocalIpAddress(MainActivity.this));
+        final String ipText = ip.getText().toString();
 
-        connectThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    serverSocket = new ServerSocket(3000);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this,"端口打开",Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    while (true){
-                        socket = serverSocket.accept();
+        if (ipText != null && !ipText.equals("")){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        socket = new Socket(ipText,3000);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(MainActivity.this,"有客户端连接到了本机",Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this,"连接成功",Toast.LENGTH_SHORT).show();
                             }
                         });
-                        serverThread = new ServerThread(socket,text,MainActivity.this);
-                        serverThread.start();
+
+                        reader = new BufferedReader(new InputStreamReader(socket.getInputStream(),"UTF-8"));
+                        while ((line = reader.readLine()) != null){
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Date date = new Date(System.currentTimeMillis());
+                                    text.append(simpleDateFormat.format(date) + " 接收：" + "\n");
+                                    text.append(line + "\n");
+                                    SpeechUtils.speekText(line);
+                                    SpeechUtils.SpeechText = line;
+                                }
+                            });
+                        }
+                        reader.close();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this,"连接出错",Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.d("提示信息", "connectThread线程错误");
                 }
-            }
-        });
-        connectThread.start();
+            }).start();
+
+        }else {
+            Toast.makeText(this,"请输入IP地址",Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     private void clear(){
