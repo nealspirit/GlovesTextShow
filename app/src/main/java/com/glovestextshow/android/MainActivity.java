@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +39,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private EditText ip;
     private TextView text;
+    private ScrollView scrollView;
     public Socket socket = null;
     private boolean isConnected = false;
     private Button button_connect;
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ip = findViewById(R.id.edit_ip);
         text = findViewById(R.id.show_message);
+        scrollView = findViewById(R.id.sv_text);
         SpeechUtility.createUtility(MainActivity.this, SpeechConstant.APPID +"=5cd67bda");
 
         button_connect = findViewById(R.id.button_ip);
@@ -126,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     Date date = new Date(System.currentTimeMillis());
                                     text.append(simpleDateFormat.format(date) + " 接收：" + "\n");
                                     text.append(line + "\n");
+                                    scrollView.fullScroll(ScrollView.FOCUS_DOWN);
                                     SpeechUtils.speekText(line);
                                     SpeechUtils.SpeechText = line;
                                 }
@@ -177,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Date date = new Date(System.currentTimeMillis());
                     text.append(simpleDateFormat.format(date) + " 输入：" + "\n");
                     text.append(words + "\n");
+                    scrollView.fullScroll(ScrollView.FOCUS_DOWN);
                     SpeechUtils.SpeechText = words;
                 }
             }
