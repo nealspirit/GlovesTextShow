@@ -9,6 +9,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,23 +35,29 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private EditText ip;
-    private TextView text;
-    private ScrollView scrollView;
-    public Socket socket = null;
-    private boolean isConnected = false;
     private Button button_connect;
+    private RecyclerView recyclerView;
+
+    public Socket socket = null;
     private RecognizerDialog iatDialog;
+
     private BufferedReader reader = null;
     private String line = null;
+
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
 
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
+
+    private List<Msg> msgList = new ArrayList<>();
+
+    private MsgAdapter adapter;
 
     private static final String TAG = "MainActivity";
 
@@ -58,23 +66,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //初始化控件
         ip = findViewById(R.id.edit_ip);
-        text = findViewById(R.id.show_message);
-        scrollView = findViewById(R.id.sv_text);
         SpeechUtility.createUtility(MainActivity.this, SpeechConstant.APPID +"=5cd67bda");
 
+        //初始化点击事件
         button_connect = findViewById(R.id.button_ip);
         button_connect.setOnClickListener(this);
-
-        findViewById(R.id.button_play).setOnClickListener(this);
-        findViewById(R.id.button_textclear).setOnClickListener(this);
         findViewById(R.id.button_speak).setOnClickListener(this);
 
+        //初始化缓存
         pref = PreferenceManager.getDefaultSharedPreferences(this);
         String ipAddress = pref.getString("ip","");
         if (!ipAddress.equals("")){
             ip.setText(ipAddress);
         }
+
+        //初始化RecyclerView
+        recyclerView = findViewById(R.id.recycler_view);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        adapter = new MsgAdapter(msgList);
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -82,12 +95,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()){
             case R.id.button_ip:
                 connect();
-                break;
-            case R.id.button_play:
-                SpeechUtils.speekText(SpeechUtils.SpeechText);
-                break;
-            case R.id.button_textclear:
-                clear();
                 break;
             case R.id.button_speak:
                 if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
@@ -127,11 +134,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 @Override
                                 public void run() {
                                     Date date = new Date(System.currentTimeMillis());
-                                    text.append(simpleDateFormat.format(date) + " 接收：" + "\n");
-                                    text.append(line + "\n");
-                                    scrollView.fullScroll(ScrollView.FOCUS_DOWN);
-                                    SpeechUtils.speekText(line);
-                                    SpeechUtils.SpeechText = line;
+                                    Msg msg = new Msg(line,Msg.TYPE_RECEIVED,date);
+                                    msgList.add(msg);
+                                    adapter.notifyItemInserted(msgList.size() - 1);
+                                    recyclerView.scrollToPosition(msgList.size() - 1);
                                 }
                             });
                         }
@@ -155,10 +161,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void clear(){
-        text.setText("");
-    }
-
     private void startSpeak() {
         iatDialog = new RecognizerDialog(MainActivity.this,minitListener);
         iatDialog.setListener(new RecognizerDialogListener() {
@@ -179,10 +181,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         words += result.toString();
                     }
                     Date date = new Date(System.currentTimeMillis());
-                    text.append(simpleDateFormat.format(date) + " 输入：" + "\n");
-                    text.append(words + "\n");
-                    scrollView.fullScroll(ScrollView.FOCUS_DOWN);
-                    SpeechUtils.SpeechText = words;
+                    Msg msg = new Msg(words,Msg.TYPE_SENT,date);
+                    msgList.add(msg);
+                    adapter.notifyItemInserted(msgList.size() - 1);
+                    recyclerView.scrollToPosition(msgList.size() - 1);
                 }
             }
 
