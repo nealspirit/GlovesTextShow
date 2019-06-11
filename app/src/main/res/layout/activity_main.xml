@@ -33,10 +33,34 @@
         android:layout_height="0dp"
         android:layout_weight="1"/>
 
-    <Button
-        android:id="@+id/button_speak"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="说话"/>
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/button_speak"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="12dp"
+            android:src="@drawable/microphone"
+            android:scaleType="fitCenter"/>
+
+        <EditText
+            android:id="@+id/edit_msg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:maxLines="1"/>
+
+        <Button
+            android:id="@+id/button_send"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:text="发送"/>
+
+    </LinearLayout>
 
 </LinearLayout>

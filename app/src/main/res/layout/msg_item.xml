@@ -39,8 +39,8 @@
 
         <ImageView
             android:id="@+id/horn_left"
-            android:layout_width="30dp"
-            android:layout_height="25dp"
+            android:layout_width="18dp"
+            android:layout_height="15dp"
             android:src="@drawable/horn_left"
             android:layout_gravity="center_vertical"
             android:scaleType="fitXY"/>
@@ -56,8 +56,8 @@
 
         <ImageView
             android:id="@+id/horn_right"
-            android:layout_width="30dp"
-            android:layout_height="25dp"
+            android:layout_width="18dp"
+            android:layout_height="15dp"
             android:src="@drawable/horn_right"
             android:layout_gravity="center_vertical"
             android:scaleType="fitXY"/>

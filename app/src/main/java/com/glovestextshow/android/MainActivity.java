@@ -41,6 +41,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private EditText ip;
+    private EditText send_msg;
     private Button button_connect;
     private RecyclerView recyclerView;
 
@@ -49,8 +50,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private BufferedReader reader = null;
     private String line = null;
-
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
 
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
@@ -68,12 +67,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //初始化控件
         ip = findViewById(R.id.edit_ip);
+        send_msg = findViewById(R.id.edit_msg);
         SpeechUtility.createUtility(MainActivity.this, SpeechConstant.APPID +"=5cd67bda");
 
         //初始化点击事件
         button_connect = findViewById(R.id.button_ip);
         button_connect.setOnClickListener(this);
         findViewById(R.id.button_speak).setOnClickListener(this);
+        findViewById(R.id.button_send).setOnClickListener(this);
 
         //初始化缓存
         pref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -101,6 +102,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.RECORD_AUDIO},1);
                 }else {
                     startSpeak();
+                }
+                break;
+            case R.id.button_send:
+                String content = send_msg.getText().toString();
+                if (!"".equals(content)){
+                    Date date = new Date(System.currentTimeMillis());
+                    Msg msg = new Msg(content,Msg.TYPE_SENT,date);
+                    msgList.add(msg);
+                    adapter.notifyItemInserted(msgList.size() - 1);
+                    recyclerView.scrollToPosition(msgList.size() - 1);
+                    send_msg.setText("");
                 }
                 break;
             default:

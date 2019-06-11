@@ -11,7 +11,7 @@ public class Msg {
     private int type;
     private Date date;
 
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
 
     public Msg(String content, int type, Date date) {
         this.content = content;
