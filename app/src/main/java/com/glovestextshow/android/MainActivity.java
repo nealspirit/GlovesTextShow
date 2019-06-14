@@ -1,21 +1,27 @@
 package com.glovestextshow.android;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,16 +40,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private EditText ip;
     private EditText send_msg;
-    private Button button_connect;
     private RecyclerView recyclerView;
+    private Toolbar toolbar;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private TextView NavHeaderIP;
+    private TextView NavHeaderConnection;
 
     public Socket socket = null;
     private RecognizerDialog iatDialog;
@@ -60,28 +68,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "MainActivity";
 
+    //取得IP地址
+    String ipText = "192.168.1.108";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         //初始化控件
-        ip = findViewById(R.id.edit_ip);
         send_msg = findViewById(R.id.edit_msg);
         SpeechUtility.createUtility(MainActivity.this, SpeechConstant.APPID +"=5cd67bda");
 
         //初始化点击事件
-        button_connect = findViewById(R.id.button_ip);
-        button_connect.setOnClickListener(this);
         findViewById(R.id.button_speak).setOnClickListener(this);
         findViewById(R.id.button_send).setOnClickListener(this);
 
         //初始化缓存
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        String ipAddress = pref.getString("ip","");
-        if (!ipAddress.equals("")){
-            ip.setText(ipAddress);
-        }
+//        pref = PreferenceManager.getDefaultSharedPreferences(this);
+//        String ipAddress = pref.getString("ip","");
+//        if (!ipAddress.equals("")){
+//            ip.setText(ipAddress);
+//        }
 
         //初始化RecyclerView
         recyclerView = findViewById(R.id.recycler_view);
@@ -89,14 +97,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(layoutManager);
         adapter = new MsgAdapter(msgList);
         recyclerView.setAdapter(adapter);
+
+        //设置Toolbar
+        toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("");
+        setSupportActionBar(toolbar);
+
+        //初始化DrawerLayout
+        drawerLayout = findViewById(R.id.drawer_layout);
+
+        //设置NavigationView
+        navigationView = findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        NavHeaderIP = headerView.findViewById(R.id.nav_header_IP);
+        NavHeaderConnection = headerView.findViewById(R.id.nav_header_connection);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                switch (menuItem.getItemId()){
+                    case R.id.nav_reconnect:
+                        connect();
+                        break;
+                    case R.id.change_ip:
+                        final EditText et = new EditText(MainActivity.this);
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("切换IP")
+                                .setView(et)
+                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        ipText = et.getText().toString();
+                                        connect();
+                                        Toast.makeText(MainActivity.this,"切换成功",Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .setNegativeButton("取消",null)
+                                .show();
+                        break;
+                    case R.id.exit:
+                        Toast.makeText(MainActivity.this,"退出",Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                drawerLayout.closeDrawers();
+                return true;
+            }
+        });
+
+        connect();
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.button_ip:
-                connect();
-                break;
             case R.id.button_speak:
                 if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
                     ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.RECORD_AUDIO},1);
@@ -121,55 +173,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void connect() {
-        final String ipText = ip.getText().toString();
+        toolbar.setTitle(ipText);
+        toolbar.setSubtitle("正在连接...");
+        NavHeaderIP.setText(ipText);
+        NavHeaderConnection.setText("正在连接...");
 
-        if (ipText != null && !ipText.equals("")){
-            editor = pref.edit();
-            editor.putString("ip",ipText);
-            editor.apply();
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        socket = new Socket(ipText,3000);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MainActivity.this,"连接成功",Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-                        reader = new BufferedReader(new InputStreamReader(socket.getInputStream(),"UTF-8"));
-                        while ((line = reader.readLine()) != null){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Date date = new Date(System.currentTimeMillis());
-                                    Msg msg = new Msg(line,Msg.TYPE_RECEIVED,date);
-                                    msgList.add(msg);
-                                    adapter.notifyItemInserted(msgList.size() - 1);
-                                    recyclerView.scrollToPosition(msgList.size() - 1);
-                                }
-                            });
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    socket = new Socket(ipText,3000);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            toolbar.setSubtitle("已连接");
+                            NavHeaderConnection.setText("已连接");
                         }
-                        reader.close();
+                    });
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    reader = new BufferedReader(new InputStreamReader(socket.getInputStream(),"UTF-8"));
+                    while ((line = reader.readLine()) != null){
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(MainActivity.this,"连接出错",Toast.LENGTH_SHORT).show();
+                                Date date = new Date(System.currentTimeMillis());
+                                Msg msg = new Msg(line,Msg.TYPE_RECEIVED,date);
+                                msgList.add(msg);
+                                adapter.notifyItemInserted(msgList.size() - 1);
+                                recyclerView.scrollToPosition(msgList.size() - 1);
                             }
                         });
                     }
-                }
-            }).start();
+                    reader.close();
 
-        }else {
-            Toast.makeText(this,"请输入IP地址",Toast.LENGTH_SHORT).show();
-        }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            toolbar.setSubtitle("连接断开");
+                            NavHeaderConnection.setText("连接断开");
+                        }
+                    });
+                }
+            }
+        }).start();
 
     }
 
@@ -232,5 +280,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             default:
                 break;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.clearText:
+                msgList.clear();
+                adapter.notifyDataSetChanged();
+                break;
+            case R.id.reconnect:
+                connect();
+                break;
+            case R.id.setting:
+                drawerLayout.openDrawer(GravityCompat.START);
+                break;
+            default:
+        }
+        return true;
     }
 }
