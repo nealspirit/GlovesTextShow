@@ -66,10 +66,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private MsgAdapter adapter;
 
+
     private static final String TAG = "MainActivity";
 
-    //取得IP地址
-    String ipText = "192.168.1.108";
+    //IP地址
+    String ipText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,11 +86,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button_send).setOnClickListener(this);
 
         //初始化缓存
-//        pref = PreferenceManager.getDefaultSharedPreferences(this);
-//        String ipAddress = pref.getString("ip","");
-//        if (!ipAddress.equals("")){
-//            ip.setText(ipAddress);
-//        }
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        ipText = pref.getString("ip","");
+        if (ipText.equals("")){
+            ipText = "无连接";
+        }
 
         //初始化RecyclerView
         recyclerView = findViewById(R.id.recycler_view);
@@ -134,8 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 .setNegativeButton("取消",null)
                                 .show();
                         break;
-                    case R.id.exit:
-                        Toast.makeText(MainActivity.this,"退出",Toast.LENGTH_SHORT).show();
+                    default:
                         break;
                 }
                 drawerLayout.closeDrawers();
@@ -190,6 +190,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             NavHeaderConnection.setText("已连接");
                         }
                     });
+
+                    editor = pref.edit();
+                    editor.putString("ip",ipText);
+                    editor.apply();
 
                     reader = new BufferedReader(new InputStreamReader(socket.getInputStream(),"UTF-8"));
                     while ((line = reader.readLine()) != null){
