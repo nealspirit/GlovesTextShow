@@ -183,13 +183,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 try {
                     socket = new Socket(ipText,3000);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            toolbar.setSubtitle("已连接");
-                            NavHeaderConnection.setText("已连接");
-                        }
-                    });
 
                     editor = pref.edit();
                     editor.putString("ip",ipText);
@@ -200,11 +193,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Date date = new Date(System.currentTimeMillis());
-                                Msg msg = new Msg(line,Msg.TYPE_RECEIVED,date);
-                                msgList.add(msg);
-                                adapter.notifyItemInserted(msgList.size() - 1);
-                                recyclerView.scrollToPosition(msgList.size() - 1);
+                                if (line.equals("@200")){
+                                    toolbar.setSubtitle("已连接");
+                                    NavHeaderConnection.setText("已连接");
+                                }else {
+                                    Date date = new Date(System.currentTimeMillis());
+                                    Msg msg = new Msg(line, Msg.TYPE_RECEIVED, date);
+                                    msgList.add(msg);
+                                    adapter.notifyItemInserted(msgList.size() - 1);
+                                    recyclerView.scrollToPosition(msgList.size() - 1);
+                                }
                             }
                         });
                     }
