@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private TextView NavHeaderIP;
-    private TextView NavHeaderConnection;
 
     public Socket socket = null;
     private RecognizerDialog iatDialog;
@@ -111,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         navigationView = findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
         NavHeaderIP = headerView.findViewById(R.id.nav_header_IP);
-        NavHeaderConnection = headerView.findViewById(R.id.nav_header_connection);
+        NavHeaderIP.setText(NetWorkUtils.getLocalIpAddress(this));
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -175,8 +174,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void connect() {
         toolbar.setTitle(ipText);
         toolbar.setSubtitle("正在连接...");
-        NavHeaderIP.setText(ipText);
-        NavHeaderConnection.setText("正在连接...");
 
         new Thread(new Runnable() {
             @Override
@@ -195,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             public void run() {
                                 if (line.equals("@200")){
                                     toolbar.setSubtitle("已连接");
-                                    NavHeaderConnection.setText("已连接");
                                 }else {
                                     Date date = new Date(System.currentTimeMillis());
                                     Msg msg = new Msg(line, Msg.TYPE_RECEIVED, date);
@@ -214,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         @Override
                         public void run() {
                             toolbar.setSubtitle("连接断开");
-                            NavHeaderConnection.setText("连接断开");
                         }
                     });
                 }
