@@ -1,8 +1,9 @@
-package com.glovestextshow.android;
+package com.glovestextshow.android.utils;
 
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.glovestextshow.android.MyApplication;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechError;
 import com.iflytek.cloud.SpeechSynthesizer;

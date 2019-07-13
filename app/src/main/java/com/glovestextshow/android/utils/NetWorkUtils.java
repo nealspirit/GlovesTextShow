@@ -1,4 +1,4 @@
-package com.glovestextshow.android;
+package com.glovestextshow.android.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

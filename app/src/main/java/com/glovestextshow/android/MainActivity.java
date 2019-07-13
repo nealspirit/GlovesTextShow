@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.glovestextshow.android.utils.NetWorkUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.iflytek.cloud.ErrorCode;
@@ -89,6 +90,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ipText = pref.getString("ip","");
         if (ipText.equals("")){
             ipText = "无连接";
+            final EditText et = new EditText(MainActivity.this);
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("选择IP")
+                    .setView(et)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            ipText = et.getText().toString();
+                            connect();
+                        }
+                    })
+                    .setNegativeButton("取消",null)
+                    .show();
         }
 
         //初始化RecyclerView
