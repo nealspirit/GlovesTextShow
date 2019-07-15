@@ -18,7 +18,7 @@ public class HandLanguageUtils {
             "保持","联系",
             "谢谢",
             "我","爱",
-            "再见"};
+            "再见","好"};
     //语句库
     private static String[] wordsLibrary = {"你好","你电话多少","你很可爱","你要加油","你很高兴","你电话什么","你多少钱",
             "很高兴见到你",
@@ -28,7 +28,8 @@ public class HandLanguageUtils {
             "谢谢",
             "我爱你","我很高兴","我要加油","跟我走","我联系你",
             "再见",
-            "我很可爱"};
+            "我很可爱",
+            "好"};
 
     public static void main(String[] args) {
         updateLanguage();
@@ -56,6 +57,9 @@ public class HandLanguageUtils {
 
         if(wordsLibrary[index].equals("你多少钱")){
             wordsLibrary[index] = "这个东西多少钱";
+        }
+        if(wordsLibrary[index].equals("好")){
+            wordsLibrary[index] = "好的";
         }
 
         return wordsLibrary[index];
