@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.glovestextshow.android.utils.MatchTextUtils;
 import com.glovestextshow.android.utils.NetWorkUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -124,7 +125,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         navigationView = findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
         NavHeaderIP = headerView.findViewById(R.id.nav_header_IP);
-        NavHeaderIP.setText(NetWorkUtils.getLocalIpAddress(this));
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -207,11 +207,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 if (line.equals("@200")){
                                     toolbar.setSubtitle("已连接");
                                 }else {
-                                    Date date = new Date(System.currentTimeMillis());
-                                    Msg msg = new Msg(line, Msg.TYPE_RECEIVED, date);
-                                    msgList.add(msg);
-                                    adapter.notifyItemInserted(msgList.size() - 1);
-                                    recyclerView.scrollToPosition(msgList.size() - 1);
+                                    String receiveText = MatchTextUtils.SearchText(line);
+                                    if (receiveText.equals("无法识别，请重新输入")){
+                                        Toast.makeText(MainActivity.this,"无法识别，请重新输入",Toast.LENGTH_SHORT).show();
+                                    }else {
+                                        Date date = new Date(System.currentTimeMillis());
+                                        Msg msg = new Msg(receiveText, Msg.TYPE_RECEIVED, date);
+                                        msgList.add(msg);
+                                        adapter.notifyItemInserted(msgList.size() - 1);
+                                        recyclerView.scrollToPosition(msgList.size() - 1);
+                                    }
                                 }
                             }
                         });
@@ -315,5 +320,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             default:
         }
         return true;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        NavHeaderIP.setText(NetWorkUtils.getLocalIpAddress(this));
     }
 }
