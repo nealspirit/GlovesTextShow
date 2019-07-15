@@ -31,12 +31,6 @@ public class HandLanguageUtils {
             "我很可爱",
             "好"};
 
-    public static void main(String[] args) {
-        updateLanguage();
-        System.out.println(identityString("我/很高兴/跟我走"));
-
-    }
-
     public static String identityString(String text){
         int N = wordsLibrary.length;
         float[] matchers = new float[N];
